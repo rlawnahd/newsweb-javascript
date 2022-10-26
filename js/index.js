@@ -26,21 +26,40 @@ const weatherRender = (data) => {
 //날씨 호출
 weatherApi();
 
+let url;
+
+const newsApi = async () => {
+  try {
+    let news = await fetch(url);
+    let newsData = await news.json();
+    if (news.status == 200) {
+      if (newsData.totalResults === 0) {
+        throw new Error('검색된 뉴스가 없습니다.');
+      } else {
+        newsRender(newsData);
+      }
+    } else {
+      throw new Error(newsData.message);
+    }
+  } catch (error) {
+    errorRender(error.message);
+  }
+};
+function errorRender(message) {
+  document.querySelector('.section_title').innerHTML = 'ERROR';
+  let errorHTML = `<div>${message}</div>`;
+  document.querySelector('.area').innerHTML = errorHTML;
+}
+
 const getnewsApi = async () => {
-  let news = await fetch(
-    `https://newsapi.org/v2/top-headlines?country=us&pageSize=5&apiKey=dc72e31ec74e441f87a36f2479368b45`
-  );
-  let newsData = await news.json();
-  newsRender(newsData);
+  url = `https://newsapi.org/v2/top-headlines?country=us&pageSize=5&apiKey=dc72e31ec74e441f87a36f2479368b45`;
+  newsApi();
 };
 
 const newsRender = async (data) => {
   let newsHTML = '';
   let articles = data.articles;
 
-  let articlesData = articles.map((item) => {
-    return item;
-  });
   newsHTML += `
     <div class="first_area">
     <img src=${articles[0].urlToImage} alt="" />
@@ -49,9 +68,9 @@ const newsRender = async (data) => {
        ${articles[0].title}
       </dt>
       <dd>
-        ${articlesData[0].content}
+        ${articles[0].content}
       </dd>
-      <dd><span>${articlesData[0].publishedAt}
+      <dd><span>${moment(articles[0].publishedAt).fromNow()}
       </span></dd>
     </dl>
   </div>
@@ -60,44 +79,123 @@ const newsRender = async (data) => {
       <div class="second_top">
         <dl>
           <dt>
-          ${articlesData[1].title}
+          ${articles[1].title}
           </dt>
           <dd>
-          ${articlesData[1].content}
+          ${articles[1].content}
           </dd>
-          <dd><span>${articlesData[1].publishedAt}</span></dd>
+          <dd><span>${moment(articles[1].publishedAt).fromNow()}</span></dd>
         </dl>
       </div>
       <div class="second_bottom">
-        <img src=${articlesData[2].urlToImage} alt="" />
+        <img src=${articles[2].urlToImage} alt="" />
         <dl>
           <dt>
-          ${articlesData[2].title}
+          ${articles[2].title}
           </dt>
           <dd>
-          ${articlesData[2].content}
+          ${articles[2].content}
           </dd>
-          <dd><span>${articlesData[2].publishedAt}</span></dd>
+          <dd><span>${moment(articles[2].publishedAt).fromNow()}</span></dd>
         </dl>
       </div>
     </div>
     <div class="third_area">
-      <img src=${articlesData[3].urlToImage} alt="" />
+      <img src=${articles[3].urlToImage} alt="" />
       <dl>
         <dt>
-        ${articlesData[3].title}
+        ${articles[3].title}
         </dt>
         <dd>
-        ${articlesData[3].content}
+        ${articles[3].content}
         </dd>
-        <dd><span>${articlesData[3].publishedAt}</span></dd>
+        <dd><span>${moment(articles[3].publishedAt).fromNow()}</span></dd>
       </dl>
     </div>
   </div>
     `;
-  document.querySelector('.area').innerHTML += newsHTML;
+  document.querySelector('.area').innerHTML = newsHTML;
+};
+const getnewsFeatureApi = async () => {
+  let featureApi = await fetch(
+    `https://newsapi.org/v2/everything?q=apple&from=2022-10-25&to=2021-10-25&pageSize=10&sortBy=popularity&apiKey=dc72e31ec74e441f87a36f2479368b45`
+  );
+  let featureData = await featureApi.json();
+  featureRender(featureData);
+};
+//
+const featureRender = async (data) => {
+  let featureNewHTML = '';
+  let featureArticles = data.articles;
+  await featureArticles.forEach((item) => {
+    featureNewHTML += `<li>
+        <img src=${item.urlToImage} alt="" />
+
+        <dl>
+          <dt>
+           ${item.title}
+          </dt>
+          <dd>${item.content}</dd>
+        </dl>
+      </li>
+      <li>`;
+    document.querySelector('.footer_main ul').innerHTML = featureNewHTML;
+  });
+  let slideUl = document.querySelector('.footer_main ul');
+  let liWidth = 420;
+  let ulWidth = liWidth * featureArticles.length;
+  let ulLeft = 0;
+  let slideTransition = 1;
+  //   slideUl.style['transition'] = slideTransition + 's';
+  slideUl.style['width'] = ulWidth + 'px';
+
+  leftBtn.addEventListener('click', () => {
+    ulLeft >= 0 ? console.log('왼쪽') : (ulLeft += 480);
+
+    slideUl.style['left'] = ulLeft + 'px';
+  });
+  RightBtn.addEventListener('click', () => {
+    ulLeft -= 480;
+    slideUl.style['left'] = ulLeft + 'px';
+    if (ulLeft < -3300) {
+      ulLeft = 0;
+    }
+  });
 };
 
+//카테고리 호출
+
+const categoryTap = document.querySelectorAll('.header_list li');
+const getCategoryNews = async (event) => {
+  let category = event.target.textContent.toLowerCase();
+  url = `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=dc72e31ec74e441f87a36f2479368b45`;
+
+  newsApi();
+};
+
+categoryTap.forEach((item) => {
+  item.addEventListener('click', (event) => {
+    getCategoryNews(event);
+    document.querySelector(
+      '.section_title'
+    ).innerText = `${event.target.textContent}`;
+  });
+});
+
+//키워드별 검색기능
+const searchInput = document.getElementById('search_input');
+const searchSubmit = document.querySelector('.xi-search');
+
+const searchNewsApi = async () => {
+  let keyword = searchInput.value;
+
+  url = `https://newsapi.org/v2/everything?q=${keyword}&apiKey=dc72e31ec74e441f87a36f2479368b45`;
+  document.querySelector('.section_title').innerText = `${keyword}`;
+  searchInput.value = '';
+  newsApi();
+};
+
+searchSubmit.addEventListener('click', searchNewsApi);
 //   articles.forEach((item) => {
 //
 //   });
@@ -105,5 +203,13 @@ const newsRender = async (data) => {
 //   let newsTitle = data.articles[0].title;
 //   let newsContent = data.articles[0].content;
 //   let date = data.articles[0].publishedAt;
+//왼쪽 슬라이드 버튼
 
+//   .addEventListener('click', function () {
+//     console.log('click');
+//   });
+let leftBtn = document.querySelector('.xi-arrow-left');
+let RightBtn = document.querySelector('.xi-arrow-right');
+
+getnewsFeatureApi();
 getnewsApi();

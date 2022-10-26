@@ -182,7 +182,9 @@ footer img {
 .footer_slide {
   padding: 20px 0;
 }
-
+.footer_main ul {
+  transition: 1s;
+}
 .footer_main ul li {
   width: 500px;
   list-style: none;
@@ -213,4 +215,6 @@ footer img {
   margin-left: 20px;
   border: none;
   background-color: #f4f8fb;
+}
+.footer_btn {
 }
