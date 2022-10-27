@@ -32,8 +32,9 @@ const newsApi = async () => {
   try {
     let news = await fetch(url);
     let newsData = await news.json();
+    console.log(newsData);
     if (news.status == 200) {
-      if (newsData.totalResults === 0) {
+      if (newsData.totalArticles === 0) {
         throw new Error('검색된 뉴스가 없습니다.');
       } else {
         newsRender(newsData);
@@ -52,7 +53,7 @@ function errorRender(message) {
 }
 
 const getnewsApi = async () => {
-  url = `https://newsapi.org/v2/top-headlines?country=us&pageSize=5&apiKey=dc72e31ec74e441f87a36f2479368b45`;
+  url = `https://gnews.io/api/v4/top-headlines?max=10&token=2d83b2274a7ea6cc8fd56f0947bd9ef7`;
   newsApi();
 };
 
@@ -62,7 +63,7 @@ const newsRender = async (data) => {
 
   newsHTML += `
     <div class="first_area">
-    <img src=${articles[0].urlToImage} alt="" />
+    <img src=${articles[0].image} alt="" />
     <dl>
       <dt>
        ${articles[0].title}
@@ -88,7 +89,7 @@ const newsRender = async (data) => {
         </dl>
       </div>
       <div class="second_bottom">
-        <img src=${articles[2].urlToImage} alt="" />
+        <img src=${articles[2].image} alt="" />
         <dl>
           <dt>
           ${articles[2].title}
@@ -101,7 +102,7 @@ const newsRender = async (data) => {
       </div>
     </div>
     <div class="third_area">
-      <img src=${articles[3].urlToImage} alt="" />
+      <img src=${articles[3].image} alt="" />
       <dl>
         <dt>
         ${articles[3].title}
@@ -118,7 +119,7 @@ const newsRender = async (data) => {
 };
 const getnewsFeatureApi = async () => {
   let featureApi = await fetch(
-    `https://newsapi.org/v2/everything?q=apple&from=2022-10-25&to=2021-10-25&pageSize=10&sortBy=popularity&apiKey=dc72e31ec74e441f87a36f2479368b45`
+    `https://gnews.io/api/v4/top-headlines?max=50&to=2022-08-21T16:27:09Z&token=2d83b2274a7ea6cc8fd56f0947bd9ef7`
   );
   let featureData = await featureApi.json();
   featureRender(featureData);
@@ -129,7 +130,7 @@ const featureRender = async (data) => {
   let featureArticles = data.articles;
   await featureArticles.forEach((item) => {
     featureNewHTML += `<li>
-        <img src=${item.urlToImage} alt="" />
+        <img src=${item.image} alt="" />
 
         <dl>
           <dt>
@@ -168,7 +169,7 @@ const featureRender = async (data) => {
 const categoryTap = document.querySelectorAll('.header_list li');
 const getCategoryNews = async (event) => {
   let category = event.target.textContent.toLowerCase();
-  url = `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=dc72e31ec74e441f87a36f2479368b45`;
+  url = `https://gnews.io/api/v4/top-headlines?max=50&topic=${category}&token=2d83b2274a7ea6cc8fd56f0947bd9ef7`;
 
   newsApi();
 };
@@ -189,7 +190,7 @@ const searchSubmit = document.querySelector('.xi-search');
 const searchNewsApi = async () => {
   let keyword = searchInput.value;
 
-  url = `https://newsapi.org/v2/everything?q=${keyword}&apiKey=dc72e31ec74e441f87a36f2479368b45`;
+  url = `https://gnews.io/api/v4/top-headlines?max=50&q=${keyword}&token=2d83b2274a7ea6cc8fd56f0947bd9ef7`;
   document.querySelector('.section_title').innerText = `${keyword}`;
   searchInput.value = '';
   newsApi();
